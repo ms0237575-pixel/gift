@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="ar" dir="ltr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Will You Be My sister?</title>
+    <style>
+      body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #fce4ec;
+        font-family: "Arial", sans-serif;
+        margin: 0;
+        overflow: hidden;
+      }
+
+      .container {
+        text-align: center;
+        position: relative;
+      }
+
+      .gif-container img {
+        width: 200px;
+        height: 200px;
+        object-fit: cover;
+        border-radius: 10px;
+      }
+
+      h1 {
+        color: #d81b60;
+        font-size: 2.5rem;
+        margin: 20px 0;
+      }
+
+      .btn-group {
+        margin-top: 20px;
+      }
+
+      button {
+        font-size: 1.2rem;
+        padding: 10px 30px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        margin: 0 10px;
+        transition: 0.3s;
+      }
+
+      #yesBtn {
+        background-color: #e91e63;
+        color: white;
+        font-weight: bold;
+      }
+
+      #yesBtn:hover {
+        background-color: #c2185b;
+        transform: scale(1.1);
+      }
+
+      #noBtn {
+        background-color: #fff;
+        color: #333;
+        border: 1px solid #ccc;
+        position: absolute;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="gif-container">
+        <img
+          id="mainImage"
+          src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMGIwZHI1YjJ6eWNjZDN2ZnN4Y3J3eXJ3eXJ3eXJ3eXJ3eXJ3eSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/MDJ9IbxxvDUQM/giphy.gif"
+          alt="Cute Cat"
+        />
+      </div>
+
+      <h1 id="question">Rawan, will you be my friend?</h1>
+
+      <div class="btn-group">
+        <button id="yesBtn">Yes</button>
+        <button id="noBtn">No</button>
+      </div>
+    </div>
+
+    <script>
+      const yesBtn = document.getElementById("yesBtn");
+      const noBtn = document.getElementById("noBtn");
+      const question = document.getElementById("question");
+      const mainImage = document.getElementById("mainImage");
+      const btnGroup = document.querySelector(".btn-group");
+
+      noBtn.addEventListener("mouseover", () => {
+        const containerRect = document
+          .querySelector(".container")
+          .getBoundingClientRect();
+        const maxX = window.innerWidth - noBtn.offsetWidth;
+        const maxY = window.innerHeight - noBtn.offsetHeight;
+
+        const randomX = Math.floor(Math.random() * maxX);
+        const randomY = Math.floor(Math.random() * maxY);
+
+        noBtn.style.position = "fixed";
+        noBtn.style.left = randomX + "px";
+        noBtn.style.top = randomY + "px";
+      });
+
+      yesBtn.addEventListener("click", () => {
+        question.innerHTML = "YAY! 🎉 my friend! ❤️";
+
+        mainImage.src =
+          "https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExajl2MHY4djFtNDY1cDN0MGtmc3I4aWlyeWR2eHV1aWZlaXI1NWxvZyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/nO8ta7RvfXD8Y1CFyr/giphy.gif";
+
+        document.getElementById("yesBtn").style.display = "none";
+        document.getElementById("noBtn").style.display = "none";
+      });
+    </script>
+  </body>
+</html>
