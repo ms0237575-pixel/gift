@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Particle Text Effect</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        background: #060414;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        overflow: hidden;
+        font-family: sans-serif;
+      }
+      canvas {
+        display: block;
+        max-width: 100%;
+      }
+      .controls {
+        position: absolute;
+        bottom: 50px;
+        display: flex;
+        gap: 10px;
+        background: rgba(10, 6, 20, 0.75);
+        padding: 15px 25px;
+        border-radius: 50px;
+        border: 1px solid rgba(108, 85, 247, 0.3);
+        backdrop-filter: blur(20px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      }
+      input {
+        background: transparent;
+        border: none;
+        color: white;
+        outline: none;
+        font-size: 1rem;
+        width: 200px;
+      }
+      button {
+        background: #6c55f7;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 20px;
+        cursor: pointer;
+        font-weight: bold;
+        text-transform: uppercase;
+        transition: 0.3s;
+      }
+      button:hover {
+        background: #8675f9;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="canvas1"></canvas>
+
+    <div class="controls">
+      <input
+        type="text"
+        id="userInput"
+        placeholder="Write anything..."
+        maxlength="12"
+      />
+      <button id="generateBtn">Generate</button>
+    </div>
+
+    <script>
+      const canvas = document.getElementById("canvas1");
+      const ctx = canvas.getContext("2d", { willReadFrequently: true });
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      let particles = [];
+      const mouse = { x: 0, y: 0, radius: 80 };
+
+      // مصفوفة ألوان نيون عشان تختار منها عشوائياً
+      const colors = [
+        "#ff00ff",
+        "#00ffff",
+        "#00ff00",
+        "#ffff00",
+        "#ff0000",
+        "#ff8c00",
+        "#7fff00",
+      ];
+      let currentColor = "#ff00ff";
+
+      window.addEventListener("mousemove", (e) => {
+        mouse.x = e.x;
+        mouse.y = e.y;
+      });
+
+      class Particle {
+        constructor(x, y, color) {
+          this.x = Math.random() * canvas.width;
+          this.y = Math.random() * canvas.height;
+          this.destX = x;
+          this.destY = y;
+          this.size = 1.5; // حجم النقطة
+          this.vx = 0;
+          this.vy = 0;
+          this.accX = 0;
+          this.accY = 0;
+          this.friction = 0.9; // احتكاك عشان الحركة تهدأ بسرعة
+          this.color = color;
+        }
+
+        draw() {
+          ctx.fillStyle = this.color;
+          ctx.beginPath();
+          ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        update() {
+          // حركة الانجذاب لمكان الحرف
+          this.accX = (this.destX - this.x) / 60;
+          this.accY = (this.destY - this.y) / 60;
+          this.vx += this.accX;
+          this.vy += this.accY;
+          this.vx *= this.friction;
+          this.vy *= this.friction;
+          this.x += this.vx;
+          this.y += this.vy;
+
+          // تفاعل الماوس (بيدفع النقط بعيد)
+          let dx = mouse.x - this.x;
+          let dy = mouse.y - this.y;
+          let distance = Math.sqrt(dx * dx + dy * dy);
+          if (distance < mouse.radius) {
+            let force = (mouse.radius - distance) / mouse.radius;
+            this.vx -= dx * force * 0.5;
+            this.vy -= dy * force * 0.5;
+          }
+        }
+      }
+
+      function init(text) {
+        particles = [];
+        // نختار لون عشوائي جديد لكل كلمة
+        currentColor = colors[Math.floor(Math.random() * colors.length)];
+
+        // إعدادات الخط (خليناه أكبر وأعرض عشان يبان كويس)
+        const fontSize = Math.min(canvas.width / 6, 180);
+        ctx.fillStyle = "white";
+        ctx.font = `bold ${fontSize}px Arial`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillText(text.toUpperCase(), canvas.width / 2, canvas.height / 2);
+
+        // سحب بيانات البيكسلز
+        const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // مسح الشاشة وتوزيع النقط (زودنا الكثافة بإننا بنمشي كل 3 بيكسل بدل 4)
+        for (let y = 0; y < canvas.height; y += 3) {
+          for (let x = 0; x < canvas.width; x += 3) {
+            const alpha = data[y * 4 * canvas.width + x * 4 + 3];
+            if (alpha > 128) {
+              particles.push(new Particle(x, y, currentColor));
+            }
+          }
+        }
+      }
+
+      function animate() {
+        ctx.fillStyle = "rgba(6, 4, 20, 0.2)"; // تأثير خيال خفيف ورا النقط
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        particles.forEach((p) => {
+          p.update();
+          p.draw();
+        });
+        requestAnimationFrame(animate);
+      }
+
+      document.getElementById("generateBtn").addEventListener("click", () => {
+        const val = document.getElementById("userInput").value;
+        if (val.trim() !== "") {
+          init(val);
+        }
+      });
+
+      // البداية
+      init("SEIF");
+      animate();
+
+      window.addEventListener("resize", () => {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        const val = document.getElementById("userInput").value || "SEIF";
+        init(val);
+      });
+    </script>
+  </body>
+</html>
